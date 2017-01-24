@@ -1,0 +1,3 @@
+{
+    "What is a correct term for the following piece of Python syntax?  3 + 4":"An expression","Given the code: s = 'z1' + str(2) What is the outcome?":"The value z12 is assigned to s","What will be displayed as the result of executing the following? animals = ['bear', 'tiger', 'penguin', 'zebra'] print(animals[2])"
+}
