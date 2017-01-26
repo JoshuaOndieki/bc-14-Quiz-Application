@@ -36,7 +36,30 @@ class QuizApp(cmd.Cmd):
         print(Fore.GREEN)
         print("\t\t\t\t\t\t\t\tCREATE A QUIZ WIZARD")
         print(Style.RESET_ALL)
+        quiz_name=input("Give your new quiz a name>> ")
+        new_quiz={}
+        num_que=int(input("Type the number of questions you would like to add in your quiz >> "))
+        while num_que>0:
+            question=input("Type your question>> ")
+            answer_a=input("Answer A). ")
+            answer_b=input("Answer B). ")
+            answer_c=input("Answer C). ")
+            answer_d=input("Answer D). ")
+            correct_answer=input("Choose a letter for correct answer. (A B C D) >> ")
+            #initialize dict items
+            with open(current_path+"/"+"dellas/quizzes.json","r") as quizzes_list:
+                quiz_dict=json.load(quizzes_list)
+                quiz_dict[quiz_name]={question:{"Answers":[answer_a,answer_b,answer_c,answer_d],"Correct":correct_answer}}
+            with open(current_path+"/"+"dellas/quizzes.json","w") as quizzes_list:
+                json.dump(quiz_dict, quizzes_list)
+            num_que-=1
+        level=input("Choose a level for your quiz, e.g beginner,intermediate etc")
+        new_quiz_level={}
+        new_quiz_level[quiz_name] = level
+        with open(current_path+"/"+"quizlevel.json","a") as quiz_levels:
+            json.dump(new_quiz_level,quiz_levels)
 
+        print("\t\t\t\t\t\t\t\tYour quiz "+quiz_name+" was created successfully!")
 
     def quiz_list(self):
         """
@@ -139,7 +162,10 @@ class QuizApp(cmd.Cmd):
             score_update = score_update+user_score
             quizzes_update = user_info["Quizzes taken"]
             quizzes_update= quizzes_update+1
-            user = {user_name:{"Score": score_update, "Quizzes taken": quizzes_update}}
+            max_score_update=user_info["Max score"]
+            max_score_update=max_score_update+total_questions
+            percent_update=(score_update/max_score_update)*100
+            user = {user_name:{"Score": score_update, "Quizzes taken": quizzes_update,"Max score":max_score_update,"Percent":percent_update}}
             with open(current_path+"/"+"scorebd.json","w") as scorebd:
                 json.dump(user,scorebd)
             print("Scores updated successfully")
@@ -163,7 +189,7 @@ class QuizApp(cmd.Cmd):
             with open(quizdir, encoding="utf-8") as copyfile:
                 copy_data = json.load(copyfile)  # store read data in copy_data variable
             # create a new file in dellas and save the data from imported file to new file
-            with open(current_path + "/dellas/" + quizname + ".json", "w") as new_file:
+            with open(current_path + "/dellas/" +"quizzes.json", "w") as new_file:
                 json.dump(copy_data, new_file)  # store data in new file
             print(Fore.GREEN)
             print("Quiz import successful")
@@ -182,12 +208,18 @@ class QuizApp(cmd.Cmd):
         firebases=firebase.FirebaseApplication("https://quizdella.firebaseio.com",None)
         result = firebases.get("/della",None)
         print (result)
-
+    def view_stats(self):
+        tblstat=PrettyTable(["----------------------------------------------","Score","Max score","Percentage","Quizzes done","----------------------"])
+        with open(current_path+"/"+"scorebd.json","r") as scorebd:
+            stats=json.load(scorebd)
+        stats=stats["Josh"]
+        tblstat.add_row(["----------------------------------------------",stats["Score"],stats["Max score"],stats["Percent"],stats["Quizzes taken"],"----------------------"])
+        print(tblstat)
 
 app=QuizApp()
 
 #Manual loop
-while 0==0:
+while True:
     #create a table of commands that can be executed
     print(Back.WHITE)
     print(Fore.RED)
@@ -197,6 +229,7 @@ while 0==0:
     commands_table.add_row(["quiz import","Import quizzes from external sources. Read the 'allowed quiz format' document to make sure your imported quiz does not cause errors"])
     commands_table.add_row(["online quizzes","View quizzes that are available to download from online database"])
     commands_table.add_row(["Create quiz","Create a new quiz using a wizard."])
+    commands_table.add_row(["view stats","view your performance"])
     commands_table.add_row(["quit","Save and quit app"])
     print(commands_table)
     command=str(input("Please type a command from the above table>> "))
@@ -212,6 +245,8 @@ while 0==0:
         app.list_online()
     elif command=="create quiz":
         app.create_quiz()
+    elif command=="view stats":
+        app.view_stats()
     elif command=="quit":
         """
         print(Fore.GREEN)
