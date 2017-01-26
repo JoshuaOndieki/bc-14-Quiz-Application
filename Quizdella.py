@@ -16,9 +16,9 @@ from firebase import firebase
 
 
 
-#print out a Quizdella logo
 for i in tqdm(range(100),ascii=True,desc="Quizdella loading..."):
     pass
+#print out a Quizdella logo
 cprint(figlet_format('Quiz\nDella', font='poison'),'red', "on_green")
 
 current_path = os.path.dirname(os.path.abspath(__file__)) #get the current path of the app and use to access other app folders
@@ -125,23 +125,24 @@ class QuizApp(cmd.Cmd):
                     print(Style.RESET_ALL)
                     time.sleep(2)
                     break
-            user_score = str(user_score)
+            user_score = user_score
             # on break loop or finished quiz, display the score
             percent_score = (int(user_score) / total_questions) * 100
             print(Fore.GREEN)
             print("\t\t\t\t\t\t\t\tYour score is " + str(percent_score) + "%")
             print(Style.RESET_ALL)
-            #next_step=input("Would you like to save your progress? Type YES to save, Type anything else to continue without saving>> ")
-            user_name=input("Type your username to save progress  ")
-            with open(current_path+"/"+"scorebd.json","r") as stats:
-                user_stat=json.load(stats)
-            print (user_stat)
-            score_update=int((user_stat[user_name["Score"]])+user_score)
-            quizzes_update=int((user_stat[user_name["Score"]])+1)
-            user={user_name:{"Score":score_update,"Quizzes taken":quizzes_update}}
-            with open(current_path+"/"+"scorebd.json","a") as stat:
-                print (stat)
-                json.dump(user,stat)
+            user_name="Josh"
+            with open(current_path+"/"+"scorebd.json",encoding="utf-8") as scorebd:
+                user_stat=json.load(scorebd)
+            user_info=user_stat[user_name]
+            score_update=user_info["Score"]
+            score_update = score_update+user_score
+            quizzes_update = user_info["Quizzes taken"]
+            quizzes_update= quizzes_update+1
+            user = {user_name:{"Score": score_update, "Quizzes taken": quizzes_update}}
+            with open(current_path+"/"+"scorebd.json","w") as scorebd:
+                json.dump(user,scorebd)
+            print("Scores updated successfully")
         except FileNotFoundError:
             print(Fore.RED)
             print(Back.WHITE)
