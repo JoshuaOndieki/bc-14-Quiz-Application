@@ -28,42 +28,6 @@ della_path = current_path + "/dellas/" #this will be the path of the quizzes(del
 #app functions defined inside a class QuizApp
 class QuizApp(cmd.Cmd):
 
-    def create_quiz(self):
-        """
-        DESCRIPTION: HELPS USERS TO CREATE QUIZZES EASILY IN THE APP WITHOUT LEARNING THE QUIZ JSON STRUCTURE
-        :return: NEW QUIZ
-        """
-        print(Fore.GREEN)
-        print("\t\t\t\t\t\t\t\tCREATE A QUIZ WIZARD")
-        print(Style.RESET_ALL)
-        quiz_name=input("Give your new quiz a name>> ")
-        new_quiz={}
-        num_que=int(input("Type the number of questions you would like to add in your quiz >> "))
-        while num_que>0:
-            question=input("Type your question>> ")
-            answer_a=input("Answer A). ")
-            answer_b=input("Answer B). ")
-            answer_c=input("Answer C). ")
-            answer_d=input("Answer D). ")
-            correct_answer=input("Choose a letter for correct answer. (A B C D) >> ")
-            answer_a="A. "+answer_a
-            answer_b="B. "+answer_b
-            answer_c="C. "+answer_c
-            answer_d="D. "+answer_d
-            #initialize dict items
-            with open(current_path+"/"+"dellas/quizzes.json","r") as quizzes_list:
-                quiz_dict=json.load(quizzes_list)
-                quiz_dict[quiz_name]={question:{"Answers":[answer_a,answer_b,answer_c,answer_d],"Correct":correct_answer}}
-            with open(current_path+"/"+"dellas/quizzes.json","w") as quizzes_list:
-                json.dump(quiz_dict, quizzes_list)
-            num_que-=1
-        level=input("Choose a level for your quiz, e.g beginner,intermediate etc")
-        new_quiz_level={}
-        new_quiz_level[quiz_name] = level
-        with open(current_path+"/"+"quizlevel.json","w") as quiz_levels:
-            json.dump(new_quiz_level,quiz_levels)
-
-        print("\t\t\t\t\t\t\t\tYour quiz "+quiz_name+" was created successfully!")
 
     def quiz_list(self):
         """
@@ -109,17 +73,17 @@ class QuizApp(cmd.Cmd):
                 della = json.load(quiz)
             quiz = della[quiz_name]
             questions=list(quiz.keys())
-            print(quiz)
+            #print(quiz)
             user_score = 0  # score is initialised to zero
             total_questions = int(len(quiz))
-            print(total_questions)
+            #print(total_questions)
             question_number = 0
             time_out = 10 * total_questions  # assign the quiz a duration according to its number of questions
-            timer_start = time.time()  # start the timer
             # ask questions using a while loop till no other questions are available
             print(Fore.GREEN)
             print("\t\t\t\t\t\t\t\tYou have "+str(round(time_out,2))+" seconds to finish the quiz.")
             print(Style.RESET_ALL)
+            timer_start = time.time()  # start the timer
             while question_number < total_questions:
                 print(Back.YELLOW)
                 print(Fore.BLUE)
@@ -134,7 +98,8 @@ class QuizApp(cmd.Cmd):
                 answer = input("Type your answer: ")
                 print(Style.RESET_ALL)
                 timer = time.time()
-                if time_out < (timer - timer_start):
+                time_remaining = int(time_out - (time.time() - timer_start))
+                if time_remaining<=0:
                     print(Fore.RED)
                     print("Sorry timed out!")
                     print(Style.RESET_ALL)
@@ -143,7 +108,7 @@ class QuizApp(cmd.Cmd):
                 # if the answer given by user is correct add +1 to score and respond with correct
                 if answer == correct_answer:
                     print(Fore.GREEN)
-                    time_remaining=(time.time()-timer_start)
+                    time_remaining=(time_out-(time.time()-timer_start))
                     time_remaining=str(round(time_remaining,2))
                     print ("\t\t\t\t\t\t\t\tCorrect!"+"\t\t\t\t\t\t\t\t\t\t\t\t"+time_remaining+" Seconds to go..")
                     print(Style.RESET_ALL)
@@ -155,8 +120,9 @@ class QuizApp(cmd.Cmd):
                     print(Style.RESET_ALL)
                 question_number += 1
                 # after every question check whether the time is up before asking another question
+                time_remaining = int(time_out - (time.time() - timer_start))
                 timer = time.time()
-                if time_out < (timer - timer_start):
+                if time_remaining<=0:
                     print(Fore.RED)
                     print("Sorry timed out!")
                     print(Style.RESET_ALL)
@@ -312,9 +278,7 @@ while True:
     commands_table.add_row(["online quizzes","View quizzes that are available to download from online database"])
     commands_table.add_row(["download quiz","Download a quiz from the online database to local. "])
     commands_table.add_row(["upload quiz","upload quizzes to the online database from your computer"])
-    commands_table.add_row(["Create quiz","Create a new quiz using a wizard."])
     commands_table.add_row(["view stats","view your performance"])
-    commands_table.add_row(["quit","Save and quit app"])
     print(commands_table)
     command=str(input("Please type a command from the above table>> "))
     print(Style.RESET_ALL)
@@ -327,23 +291,12 @@ while True:
         app.import_quiz()
     elif command=="online quizzes":
         app.list_online()
-    elif command=="create quiz":
-        app.create_quiz()
     elif command=="view stats":
         app.view_stats()
     elif command=="download quiz":
         app.download()
     elif command=="upload quiz":
         app.upload()
-    elif command=="quit":
-        """
-        print(Fore.GREEN)
-        print(Back.LIGHTBLUE_EX)
-        for i in tqdm(range(1), ascii=True, desc="SAVING DATA AND EXITING APP!"):
-            pass
-        print(Style.RESET_ALL)
-        """
-        print("Quit not implemented yet")
     #if user command is unknown, print a regret message
     else:
         print(Back.BLACK)
