@@ -117,6 +117,9 @@ class QuizApp(cmd.Cmd):
             time_out = 10 * total_questions  # assign the quiz a duration according to its number of questions
             timer_start = time.time()  # start the timer
             # ask questions using a while loop till no other questions are available
+            print(Fore.GREEN)
+            print("\t\t\t\t\t\t\t\tYou have "+str(round(time_out,2))+" seconds to finish the quiz.")
+            print(Style.RESET_ALL)
             while question_number < total_questions:
                 print(Back.YELLOW)
                 print(Fore.BLUE)
@@ -142,12 +145,13 @@ class QuizApp(cmd.Cmd):
                     print(Fore.GREEN)
                     time_remaining=(time.time()-timer_start)
                     time_remaining=str(round(time_remaining,2))
-                    print ("\t\t\t\t\t\t\t\tCorrect!"+"\t\t\t\t"+time_remaining+" Seconds to go..")
+                    print ("\t\t\t\t\t\t\t\tCorrect!"+"\t\t\t\t\t\t\t\t\t\t\t\t"+time_remaining+" Seconds to go..")
                     print(Style.RESET_ALL)
                     user_score += 1
                 else:
                     print(Fore.RED)
                     print("\t\t\t\t\t\t\t\tWrong answer")
+                    print("\t\t\t\t\t\t\t\tThe right  answer is "+correct_answer)
                     print(Style.RESET_ALL)
                 question_number += 1
                 # after every question check whether the time is up before asking another question
@@ -263,6 +267,7 @@ class QuizApp(cmd.Cmd):
         Usage: Command: upload quiz
         :return:
         """
+        """
         quiz_name=input("Type the name of a local quiz to upload >> ")
         with open(current_path+"/dellas/quizzes.json","r") as quizzes:
             local_quizzes=json.load(quizzes)
@@ -273,6 +278,12 @@ class QuizApp(cmd.Cmd):
         firebases.delete("/della",None)
         online_quizzes=firebases.post("/della",online_quizzes)
         print(quiz_name+" was successfully uploaded to online database. ")
+        """
+        print(Fore.RED)
+        print(Back.WHITE)
+        print("\t\t\t\t\t\t\t\tDEAR USER QUIZ UPLOAD IS NOT AVAILABLE AT THE MOMENT.QUIZDELLA DATABASE IS UNDER MAINTAINANCE. NOTE THAT THE DOWNLOAD SERVICE IS STILL AVAILABLE.")
+        print(Style.RESET_ALL)
+
 
     def view_stats(self):
         """
