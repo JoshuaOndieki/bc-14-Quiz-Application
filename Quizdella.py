@@ -189,8 +189,11 @@ class QuizApp(cmd.Cmd):
             with open(quizdir, encoding="utf-8") as copyfile:
                 copy_data = json.load(copyfile)  # store read data in copy_data variable
             # create a new file in dellas and save the data from imported file to new file
+            with open(current_path+"/"+"dellas/quizzes.json","r") as quiz_file:
+                quiz_data=json.load(quiz_file)
+            quiz_data[quizname]=copy_data
             with open(current_path + "/dellas/" +"quizzes.json", "w") as new_file:
-                json.dump(copy_data, new_file)  # store data in new file
+                json.dump(quiz_data, new_file)  # store data in new file
             print(Fore.GREEN)
             print("Quiz import successful")
             print(Style.RESET_ALL)
@@ -198,6 +201,11 @@ class QuizApp(cmd.Cmd):
             print(Fore.RED)
             print(Back.WHITE)
             print("\t\t\t\t\t\t\t\tSorry, Quizdella was unable to find the file you are trying to import. \n\t\t\t\t\t\t\t\tPlease type an existing file path, e.g C:\Documents\your_file")
+            print(Style.RESET_ALL)
+        except json.JSONDecodeError:
+            print(Fore.RED)
+            print(Back.WHITE)
+            print("\t\t\t\t\t\t\t\tSorry, the format of the quiz you are trying to import is unsupported. \n\t\t\t\t\t\t\t\tPlease use the create quiz wizard to create a new quiz instead.")
             print(Style.RESET_ALL)
     def list_online(self):
         """
