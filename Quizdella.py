@@ -80,10 +80,14 @@ class QuizApp(cmd.Cmd):
         for i in tqdm(range(1), ascii=True, desc="Getting all available local quizzes"):
             for quiz in quiz_dict:
                 quizlen = len(quiz_dict[quiz])
-                with open(current_path + "/quizlevel.json") as quizlevels:
-                    quiz_levels = json.load(quizlevels)
-                level = quiz_levels[quiz]
-                qlist.add_row([quiz, quizlen, level])
+                try:
+                    with open(current_path + "/quizlevel.json") as quizlevels:
+                        quiz_levels = json.load(quizlevels)
+                    level = quiz_levels[quiz]
+                    qlist.add_row([quiz, quizlen, level])
+                except:
+                    level="None"
+                    qlist.add_row([quiz,quizlen,level])
         print(qlist)
         print(Style.RESET_ALL)
 
@@ -181,6 +185,7 @@ class QuizApp(cmd.Cmd):
             print("\t\t\t\t\t\tThe quiz you are trying to take is not available\n\t\t\t\t\t\tPlease type 'quiz list' to see available quizzes.")
             print(Style.RESET_ALL)
 
+
     def import_quiz(self):
         """
         DESCRIPTION: IMPORT QUIZZES FROM EXTERNAL SOURCE TO THE APP
@@ -219,10 +224,62 @@ class QuizApp(cmd.Cmd):
         Usage: Command: online quizzes
         :return: A LIST OF AVAILABLE ONLINE QUIZZES
         """
+        print(Back.GREEN)
+        print(Fore.BLUE)
+        onlineq_list=PrettyTable(["Quiz","Number of questions","Level"])
         firebases=firebase.FirebaseApplication("https://quizdella.firebaseio.com",None)
-        result = firebases.get("/della",None)
-        print (result)
+        online_quizzes = firebases.get("/della",None)
+        for i in tqdm(range(1), ascii=True, desc="Getting all available online quizzes"):
+            for quiz in online_quizzes:
+                quizlen = len(online_quizzes[quiz])
+                try:
+                    with open(current_path + "/quizlevel.json","r") as quizlevels:
+                        quiz_levels = json.load(quizlevels)
+                    level = quiz_levels[quiz]
+                except:
+                    level="None"
+                onlineq_list.add_row([quiz, quizlen, level])
+        print(onlineq_list)
+        print(Style.RESET_ALL)
+    def download(self):
+        """
+        DESCRIPTION: DOWNLOAD QUIZZES FROM AN ONLINE DATABASE
+        Usage: Command: download quiz
+        :return:
+        """
+        quiz_name=input("Type the name of an online quiz to download >> ")
+        firebases=firebase.FirebaseApplication("https://quizdella.firebaseio.com",None)
+        online_quiz=firebases.get("/della",quiz_name)
+        with open(current_path + "/dellas/quizzes.json", "r") as quizzes:
+            local_quizzes = json.load(quizzes)
+        local_quizzes[quiz_name] = online_quiz
+        with open(current_path + "/dellas/quizzes.json", "w") as quizzes:
+            json.dump(local_quizzes, quizzes)
+        print("The quiz was downloaded successfully, you can now view and take the quiz")
+
+    def upload(self):
+        """
+        DESCRIPTION: UPLOAD QUIZZES TO ONLINE DATABASE
+        Usage: Command: upload quiz
+        :return:
+        """
+        quiz_name=input("Type the name of a local quiz to upload >> ")
+        with open(current_path+"/dellas/quizzes.json","r") as quizzes:
+            local_quizzes=json.load(quizzes)
+        quiz=local_quizzes[quiz_name]
+        firebases = firebase.FirebaseApplication("https://quizdella.firebaseio.com", None)
+        online_quizzes = firebases.get("/della", None)
+        online_quizzes[quiz_name]=quiz
+        firebases.delete("/della",None)
+        online_quizzes=firebases.post("/della",online_quizzes)
+        print(quiz_name+" was successfully uploaded to online database. ")
+
     def view_stats(self):
+        """
+        DESCRIPTION: DISPLAY STATISTICS FOR QUIZZES TAKEN BY USER.
+        Usage: Command: view stats
+        :return:
+        """
         tblstat=PrettyTable(["----------------------------------------------","Score","Max score","Percentage","Quizzes done","----------------------"])
         with open(current_path+"/"+"scorebd.json","r") as scorebd:
             stats=json.load(scorebd)
@@ -242,6 +299,8 @@ while True:
     commands_table.add_row(["quiz take","Use this command to take a quiz"])
     commands_table.add_row(["quiz import","Import quizzes from external sources. Note that quizzes with a foreign format will not be compatible with the application"])
     commands_table.add_row(["online quizzes","View quizzes that are available to download from online database"])
+    commands_table.add_row(["download quiz","Download a quiz from the online database to local. "])
+    commands_table.add_row(["upload quiz","upload quizzes to the online database from your computer"])
     commands_table.add_row(["Create quiz","Create a new quiz using a wizard."])
     commands_table.add_row(["view stats","view your performance"])
     commands_table.add_row(["quit","Save and quit app"])
@@ -261,6 +320,10 @@ while True:
         app.create_quiz()
     elif command=="view stats":
         app.view_stats()
+    elif command=="download quiz":
+        app.download()
+    elif command=="upload quiz":
+        app.upload()
     elif command=="quit":
         """
         print(Fore.GREEN)
