@@ -46,6 +46,10 @@ class QuizApp(cmd.Cmd):
             answer_c=input("Answer C). ")
             answer_d=input("Answer D). ")
             correct_answer=input("Choose a letter for correct answer. (A B C D) >> ")
+            answer_a="A. "+answer_a
+            answer_b="B. "+answer_b
+            answer_c="C. "+answer_c
+            answer_d="D. "+answer_d
             #initialize dict items
             with open(current_path+"/"+"dellas/quizzes.json","r") as quizzes_list:
                 quiz_dict=json.load(quizzes_list)
@@ -56,7 +60,7 @@ class QuizApp(cmd.Cmd):
         level=input("Choose a level for your quiz, e.g beginner,intermediate etc")
         new_quiz_level={}
         new_quiz_level[quiz_name] = level
-        with open(current_path+"/"+"quizlevel.json","a") as quiz_levels:
+        with open(current_path+"/"+"quizlevel.json","w") as quiz_levels:
             json.dump(new_quiz_level,quiz_levels)
 
         print("\t\t\t\t\t\t\t\tYour quiz "+quiz_name+" was created successfully!")
@@ -70,18 +74,16 @@ class QuizApp(cmd.Cmd):
         print(Back.GREEN)
         print(Fore.BLUE)
         qlist=PrettyTable(["Quiz","Number of questions","Level"])
-        quiz_list_path = current_path + "/dellas/"
+        quiz_list_path = current_path + "/dellas/quizzes.json"
+        with open(quiz_list_path,"r") as quiz:
+            quiz_dict = json.load(quiz)
         for i in tqdm(range(1), ascii=True, desc="Getting all available local quizzes"):
-            for file in os.listdir(quiz_list_path):
-                with open(current_path + "/dellas/" + file) as quiz:
-                    quiz_dict = json.load(quiz)
-                quizlen = len(quiz_dict)
-                file_length = len(file)
-                file = file[:file_length - 5]
+            for quiz in quiz_dict:
+                quizlen = len(quiz_dict[quiz])
                 with open(current_path + "/quizlevel.json") as quizlevels:
                     quiz_levels = json.load(quizlevels)
-                level = quiz_levels[file]
-                qlist.add_row([file, quizlen, level])
+                level = quiz_levels[quiz]
+                qlist.add_row([quiz, quizlen, level])
         print(qlist)
         print(Style.RESET_ALL)
 
@@ -94,16 +96,19 @@ class QuizApp(cmd.Cmd):
         :param quiz: THE NAME OF THE QUIZ
         :return: SCORE
         """
-        quiz=input("Type the name of quiz: ")
+        quiz_name=input("Type the name of quiz: ")
         try:
             # search for the full path of quiz chosen
-            quiz_path = current_path + "/dellas/" + quiz + ".json"
-            # load the quiz into a dict variable to be used
+            quiz_path = current_path + "/dellas/quizzes.json"
+            # load the quizzes into a dict variable to be used
             with open(quiz_path, encoding="utf-8") as quiz:
                 della = json.load(quiz)
-            questions = list(della.keys())
+            quiz = della[quiz_name]
+            questions=list(quiz.keys())
+            print(quiz)
             user_score = 0  # score is initialised to zero
-            total_questions = int(len(questions))
+            total_questions = int(len(quiz))
+            print(total_questions)
             question_number = 0
             time_out = 10 * total_questions  # assign the quiz a duration according to its number of questions
             timer_start = time.time()  # start the timer
@@ -114,7 +119,7 @@ class QuizApp(cmd.Cmd):
                 print(questions[question_number])
                 print(Style.RESET_ALL)
                 question = questions[question_number]
-                marking_scheme = della[question]
+                marking_scheme = quiz[question]
                 answers = marking_scheme["Answers"]
                 correct_answer = marking_scheme["Correct"]
                 for choice in answers:
@@ -131,7 +136,9 @@ class QuizApp(cmd.Cmd):
                 # if the answer given by user is correct add +1 to score and respond with correct
                 if answer == correct_answer:
                     print(Fore.GREEN)
-                    print("\t\t\t\t\t\t\t\tCorrect!")
+                    time_remaining=(time.time()-timer_start)
+                    time_remaining=str(round(time_remaining,2))
+                    print ("\t\t\t\t\t\t\t\tCorrect!"+"\t\t\t\t"+time_remaining+" Seconds to go..")
                     print(Style.RESET_ALL)
                     user_score += 1
                 else:
@@ -139,7 +146,6 @@ class QuizApp(cmd.Cmd):
                     print("\t\t\t\t\t\t\t\tWrong answer")
                     print(Style.RESET_ALL)
                 question_number += 1
-                timer = time.time()
                 # after every question check whether the time is up before asking another question
                 timer = time.time()
                 if time_out < (timer - timer_start):
@@ -234,7 +240,7 @@ while True:
     commands_table=PrettyTable(["Command","Description"])
     commands_table.add_row(["quiz list","Use this command to view available quizzes"])
     commands_table.add_row(["quiz take","Use this command to take a quiz"])
-    commands_table.add_row(["quiz import","Import quizzes from external sources. Read the 'allowed quiz format' document to make sure your imported quiz does not cause errors"])
+    commands_table.add_row(["quiz import","Import quizzes from external sources. Note that quizzes with a foreign format will not be compatible with the application"])
     commands_table.add_row(["online quizzes","View quizzes that are available to download from online database"])
     commands_table.add_row(["Create quiz","Create a new quiz using a wizard."])
     commands_table.add_row(["view stats","view your performance"])

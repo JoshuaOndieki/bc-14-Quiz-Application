@@ -1,1 +1,1 @@
-{"test": {"1+1": {"Answers": ["1", "2", "21", "111"], "Correct": "B"}}, "test1": {"2*2": {"Answers": ["4", "22", "0", "8"], "Correct": "A"}}, "test2": {"6+5": {"Answers": ["10", "9", "11", "13"], "Correct": "C"}}, "test3": {"5+8": {"Answers": ["15", "13", "10", "-3"], "Correct": "B"}}}
+{"Mathematics": {"1+1": {"Answers": ["A. 1", "B. 2", "C. 21", "D. 111"], "Correct": "B"}}, "Python": {"6+5": {"Answers": ["A. 10", "B. 9", "C. 11", "D. 13"], "Correct": "C"}}}
